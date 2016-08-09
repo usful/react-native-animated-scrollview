@@ -3,7 +3,7 @@
  */
 
 import React, {Component} from 'react';
-import {Animated, ScrollView, View, Text, StyleSheet, Dimensions} from 'react-native';
+import {Animated, ScrollView, View, Text, StyleSheet, Dimensions, Easing} from 'react-native';
 
 import AnimatedWrapper from './AnimatedWrapper';
 
@@ -15,46 +15,112 @@ export default class StaggeredScrollview extends Component {
 
     this.state = {
       scrollOffset: 0,
-      delay: 0,
-      rowHeight: 0,
+      fadeAnim: new Animated.Value(0),
+      time: 750,
+      rowHeight: 200,
+      screenSpace: height,
+      animatedValues: [],
+      visibleAnimations: [],
+      alreadyAnimated: 0
     }
+
+    this.state.visibleAnimations.push(
+      Animated.timing(
+      this.state.fadeAnim,
+      {
+        fromValue: 0,
+        toValue: 1,
+        duration: 1000,
+        easing: Easing.easeIn,
+        delay: 3000
+      })
+    );
 
     this.handleScroll = this.handleScroll.bind(this);
   }
 
   handleScroll(event) {
+    console.log(event.nativeEvent);
     this.setState({
-      scrollOffset: event.nativeEvent.contentOffset.y
+      scrollOffset: event.nativeEvent.contentOffset.y,
+      rowHeight: event.nativeEvent.contentSize.height/this.props.children.length
     });
+
+    while (((this.state.alreadyAnimated - 1) * this.state.rowHeight) <= (this.state.screenSpace + this.state.scrollOffset)) {
+      this.state.visibleAnimations.push(Animated.timing(
+        this.state.animatedValues[this.state.alreadyAnimated - 1],
+        {
+          fromValue: 0,
+          toValue: 1,
+          duration: 500,
+          easing: Easing.easeIn
+        }
+      ));
+
+      ++this.state.alreadyAnimated;
+    }
+
+    Animated.sequence(
+      this.state.visibleAnimations
+    ).start();
+    this.state.visibleAnimations = [];
   }
 
+  componentDidMount() {
+    this.state.animatedValues.map((value, key) => {
+      if (((key + 1) * this.state.rowHeight) <= (this.state.screenSpace + this.state.scrollOffset)) {
+        this.state.visibleAnimations.push(Animated.timing(
+          this.state.animatedValues[key],
+          {
+            fromValue: 0,
+            toValue: 1,
+            duration: 500,
+            easing: Easing.easeIn
+          }
+        ));
+      }
+    });
+    Animated.sequence(
+      this.state.visibleAnimations
+    ).start();
+    this.state.alreadyAnimated = this.state.visibleAnimations.length;
+    this.state.visibleAnimations = [];
+  }
   render() {
-    let delay = 0;
-    let time = 750;
 
     return (
-      <View style={this.props.style}>
+      <Animated.View style={{
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+    opacity: this.state.fadeAnim
+  }}>
     <ScrollView
-      pagingEnabled={true}
       onScroll={this.handleScroll}
+      scrollEventThrottle={100}
       showsVerticalScrollIndicator={false}>
       {this.props.children.map((child, key) => {
-        this.state.delay+= time;
+        let visible = ((key + 1) * this.state.rowHeight) <= (this.state.screenSpace + this.state.scrollOffset)
+        this.state.animatedValues.push(new Animated.Value(0));
+
         return (
-        <AnimatedWrapper delay={this.state.delay}>
+        <Animated.View style={{opacity: this.state.animatedValues[key]}}>
             {child}
-        </AnimatedWrapper>
+        </Animated.View>
         );})
       }
     </ScrollView>
-        </View>
+        </Animated.View>
     );
   }
 }
 
 const styles = StyleSheet.create({
   view: {
-    width: width,
-    backgroundColor: 'black'
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
   }
 })

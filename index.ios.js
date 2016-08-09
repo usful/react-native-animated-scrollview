@@ -6,12 +6,14 @@
 
 import React, { Component } from 'react';
 import {
+  Animated,
   AppRegistry,
   StyleSheet,
   Text,
   View,
 Image,
-Dimensions
+Dimensions,
+Easing
 } from 'react-native';
 
 import * as Animatable from 'react-native-animatable';
@@ -23,42 +25,60 @@ import ListImp from './components/ListImp';
 import StaggeredScrollview from './components/StaggeredScrollview';
 console.disableYellowBox = true;
 
-let videos = [
-  {
-    video: "assets/vids/empty-lake",
-    text: 'Introduction'
-  },
-  {
-    video: "assets/vids/clip3",
-    text: 'The Human Signature'
-  },
-  {
-    video: "assets/vids/clip7",
-    text: 'The Human Signature Continued'
-  },
-  {
-    video: "assets/vids/clip13",
-    text: 'This Project'
-  },
-  {
-    video: "assets/vids/water",
-    text: 'The Anthropocene'
-  },
-  {
-    video: "assets/vids/clip5",
-    text: 'Test Video Text'
-  }
-];
+
 
 class AnimatedPlay extends Component {
+  constructor(props) {
+    super(props);
+
+    this.state = {
+      fadeAnim: new Animated.Value(0)
+    }
+  }
+
+  componentDidMount() {
+    Animated.sequence([
+      Animated.timing(
+        this.state.fadeAnim,
+        {
+          fromValue: 0,
+          toValue: 1,
+          easing: Easing.easeIn,
+          duration: 3000
+        }
+      ),
+      Animated.timing(
+        this.state.fadeAnim,
+        {
+          fromValue: 1,
+          toValue: 0,
+          easing: Easing.easeOut,
+          duration: 1000
+        }
+      )
+    ]).start();
+  }
+
   render() {
     return (
       <View style={{ flex:1, backgroundColor: 'transparent' }}>
-        <Animatable.View animation="fadeIn" duration={300} easing="ease-in">
-          <Image style={{ height: width, width: width, alignSelf: 'center', position: 'absolute'}} source={require('./assets/img/Game-of-Thrones-Wallpapers-Black-640x960-iphone-4-4s.jpg')} />
-        </Animatable.View>
-
+          <Animated.Image style={{opacity: this.state.fadeAnim, height: height, width: width, alignSelf: 'center', position: 'absolute'}} source={require('./assets/img/Game-of-Thrones-Wallpapers-Black-640x960-iphone-4-4s.jpg')} />
         <StaggeredScrollview style={styles.container}>
+          <Image source={require('./assets/img/ddragon.gif')} />
+          <Image source={require('./assets/img/siblings.gif')} />
+          <Image source={require('./assets/img/drogo.gif')} />
+          <Image source={require('./assets/img/Jon.gif')} />
+          <Image source={require('./assets/img/giphy.gif')} />
+          <Image source={require('./assets/img/ddragon.gif')} />
+          <Image source={require('./assets/img/siblings.gif')} />
+          <Image source={require('./assets/img/drogo.gif')} />
+          <Image source={require('./assets/img/Jon.gif')} />
+          <Image source={require('./assets/img/giphy.gif')} />
+          <Image source={require('./assets/img/ddragon.gif')} />
+          <Image source={require('./assets/img/siblings.gif')} />
+          <Image source={require('./assets/img/drogo.gif')} />
+          <Image source={require('./assets/img/Jon.gif')} />
+          <Image source={require('./assets/img/giphy.gif')} />
           <Image source={require('./assets/img/ddragon.gif')} />
           <Image source={require('./assets/img/siblings.gif')} />
           <Image source={require('./assets/img/drogo.gif')} />

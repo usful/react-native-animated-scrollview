@@ -8,7 +8,6 @@ export default class AnimatedWrapper extends Component {
 
     this.state = {
       fadeAnim: new Animated.Value(0),
-      delay: 500,
     }
   }
 
@@ -17,20 +16,24 @@ export default class AnimatedWrapper extends Component {
     duration: 1000,
     fromValue: 0,
     toValue: 1,
-    visible: true
+    visible: false
   }
 
+  shouldComponentUpdate(nextProps) {
+    let bool = ((this.props.visible === false) && (nextProps.visible === true));
+    return bool;
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.visible === true) {
+      this.props.animate.start();
+      console.log('i rant');
+    }
+  }
   componentDidMount() {
+    console.log('ran');
     if (this.props.visible) {
-      Animated.timing(
-        this.state.fadeAnim,
-        {
-          fromValue: 0,
-          toValue: 1,
-          duration: 1000,
-          delay: this.props.delay,
-        }
-      ).start();
+      this.props.animate.start();
     }
   }
 
