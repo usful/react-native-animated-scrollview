@@ -3,7 +3,7 @@
  */
 
 import React, {Component} from 'react';
-import {Animated, ScrollView, View, Text, StyleSheet, Dimensions, Easing} from 'react-native';
+import {Animated, ScrollView, View, Text, StyleSheet, Dimensions, Easing, Image} from 'react-native';
 
 import AnimatedWrapper from './AnimatedWrapper';
 
@@ -22,9 +22,18 @@ export default class StaggeredScrollview extends Component {
       screenSpace: height,
       animatedValues: [],
       visibleAnimations: [],
-      alreadyAnimated: 0
+      interpolatedValues: [],
+      scalingValues: [],
+      rotateValues: [],
+      alreadyAnimated: 0,
+      endFade: new Animated.Value(0),
+      interred: 0
     }
 
+    this.state.interred = this.state.endFade.interpolate({
+      inputRange: [1763, 1900],
+      outputRange: [0, .5]
+    });
 
     this.state.visibleAnimations.push(
       Animated.timing(
@@ -34,7 +43,7 @@ export default class StaggeredScrollview extends Component {
         toValue: 1,
         duration: 1000,
         easing: Easing.easeIn,
-        delay: 3000
+        delay: 2800
       })
     );
 
@@ -47,6 +56,7 @@ export default class StaggeredScrollview extends Component {
       rowHeight: event.nativeEvent.contentSize.height/this.props.children.length
     });
 
+    console.log(this.state.scrollOffset);
     while (((this.state.alreadyAnimated - 1) * this.state.rowHeight) <= (this.state.screenSpace + this.state.scrollOffset)) {
       this.state.visibleAnimations.push(Animated.timing(
         this.state.animatedValues[this.state.alreadyAnimated - 1],
@@ -65,6 +75,12 @@ export default class StaggeredScrollview extends Component {
       this.state.visibleAnimations
     ).start();
     this.state.visibleAnimations = [];
+
+
+    if (this.state.scrollOffset > event.nativeEvent.contentSize.height - this.state.screenSpace) {
+      console.log('ran this mate');
+      this.state.endFade.setValue(this.state.scrollOffset);
+    }
   }
 
   componentDidMount() {
@@ -104,24 +120,31 @@ export default class StaggeredScrollview extends Component {
         opacity: this.state.fadeAnim
       }}>
         <ScrollView
-          onScroll={this.handleScroll}
-          scrollEventThrottle={100}
-          showsVerticalScrollIndicator={false}>
-          {this.props.children.map((child, key) => {
-            this.state.animatedValues.push(new Animated.Value(0));
-            return (
-            <Animated.View style={{opacity: this.state.animatedValues[key]}}>
-                {child}
-            </Animated.View>
-            );})
-          }
-        </ScrollView>
+            onScroll={this.handleScroll}
+            scrollEventThrottle={100}
+            showsVerticalScrollIndicator={false}>
+            {this.props.children.map((child, key) => {
+              this.state.animatedValues.push(new Animated.Value(0));
+              this.state.interpolatedValues.push(this.state.animatedValues[key].interpolate({
+                inputRange: [0, 1],
+                outputRange: [-50, 0]
+              }));
+              return (
+                <Animated.View style={{opacity: this.state.animatedValues[key], transform: [{translateX: this.state.interpolatedValues[key]}]}}>
+
+                  {child}
+                </Animated.View>
+              );})
+            }
+          </ScrollView>
+
+        <Animated.Image style={{opacity: this.state.interred, top: 0, height: height, width: width, alignSelf: 'center', position: 'absolute'}} source={require('../assets/img/wolf.jpg')} />
+
       </Animated.View>
     );
   }
 }
 
-// Not really used, just here
 const styles = StyleSheet.create({
   view: {
     flex: 1,

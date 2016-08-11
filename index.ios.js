@@ -74,16 +74,6 @@ class AnimatedPlay extends Component {
           <Image source={require('./assets/img/drogo.gif')} />
           <Image source={require('./assets/img/Jon.gif')} />
           <Image source={require('./assets/img/giphy.gif')} />
-          <Image source={require('./assets/img/ddragon.gif')} />
-          <Image source={require('./assets/img/siblings.gif')} />
-          <Image source={require('./assets/img/drogo.gif')} />
-          <Image source={require('./assets/img/Jon.gif')} />
-          <Image source={require('./assets/img/giphy.gif')} />
-          <Image source={require('./assets/img/ddragon.gif')} />
-          <Image source={require('./assets/img/siblings.gif')} />
-          <Image source={require('./assets/img/drogo.gif')} />
-          <Image source={require('./assets/img/Jon.gif')} />
-          <Image source={require('./assets/img/giphy.gif')} />
           </StaggeredScrollview>
 
         </View>
