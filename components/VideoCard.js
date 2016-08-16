@@ -3,7 +3,6 @@
 import React, {Component} from 'react';
 
 import {Animated, Dimensions, StyleSheet, View, Text} from 'react-native';
-import Video from 'react-native-video';
 import LinearGradient from 'react-native-linear-gradient';
 
 let {width, height} = Dimensions.get('window');

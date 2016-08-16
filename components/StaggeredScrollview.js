@@ -3,7 +3,7 @@
  */
 
 import React, {Component} from 'react';
-import {Animated, ScrollView, View, Text, StyleSheet, Dimensions, Easing, Image, TouchableWithoutFeedback, Modal} from 'react-native';
+import {Animated, ScrollView, View, Text, StyleSheet, Dimensions, Easing, Image, TouchableOpacity, Modal} from 'react-native';
 
 import AnimatedWrapper from './AnimatedWrapper';
 
@@ -112,6 +112,7 @@ export default class StaggeredScrollview extends Component {
 
   renderModal(child, ref) {
 
+  console.log('hello');
 
     this.refs[ref].measure((x, y, width, height) =>{
 
@@ -120,6 +121,7 @@ export default class StaggeredScrollview extends Component {
 
       let offset = y - ((this.state.screenSpace - height)/2 + this.state.scrollOffset);
 
+      console.log(y);
 
       let modalTranslateY =
         transformDriver.interpolate({
@@ -137,11 +139,12 @@ export default class StaggeredScrollview extends Component {
                         backgroundColor: 'black',
                         justifyContent: 'center'}}>
                           <Animated.View style={{transform: [{translateY: modalTranslateY}]}}>
-                            <TouchableWithoutFeedback onPress={() => {
+                            <TouchableOpacity onPress={() => {
                               Animated.sequence([
                                 Animated.timing(
                                   transformDriver,
                                   {
+                                    fromValue: 1,
                                     toValue: 0,
                                     duration: 400,
                                     easing: Easing.easeOut
@@ -150,6 +153,7 @@ export default class StaggeredScrollview extends Component {
                                 Animated.timing(
                                   modalOpacity,
                                   {
+                                    fromValue: 1,
                                     toValue: 0,
                                     duration: 300,
                                     easing: Easing.easeOut
@@ -159,7 +163,7 @@ export default class StaggeredScrollview extends Component {
 
                             }}>
                               {child}
-                            </TouchableWithoutFeedback>
+                            </TouchableOpacity>
                           </Animated.View>
                         </Animated.View>
       });
@@ -168,6 +172,7 @@ export default class StaggeredScrollview extends Component {
         Animated.timing(
           modalOpacity,
           {
+            fromValue: 0,
             toValue: 1,
             duration: 300,
             easing: Easing.easeIn
@@ -176,6 +181,7 @@ export default class StaggeredScrollview extends Component {
         Animated.timing(
           transformDriver,
           {
+            fromValue: 0,
             toValue: 1,
             duration: 400,
             easing: Easing.easeIn
@@ -197,7 +203,7 @@ export default class StaggeredScrollview extends Component {
       }}>
         <ScrollView
             onScroll={this.handleScroll}
-            scrollEventThrottle={100}
+            scrollEventThrottle={35}
             showsVerticalScrollIndicator={false}>
 
             {this.props.children.map((child, key) => {
@@ -223,9 +229,9 @@ export default class StaggeredScrollview extends Component {
                   transform: [{translateY: this.state.styleValues[key].translateX}]
                 }} >
 
-                  <TouchableWithoutFeedback onPress={() => this.renderModal(child, this.state.styleValues[key].ref)}>
+                  <TouchableOpacity onPress={() => this.renderModal(child, this.state.styleValues[key].ref)}>
                   {child}
-                    </TouchableWithoutFeedback>
+                    </TouchableOpacity>
                 </Animated.View>
                   </View>
               );})
@@ -233,7 +239,6 @@ export default class StaggeredScrollview extends Component {
           </ScrollView>
         {(this.state.expandedModal ) ? this.state.expandedModal : null}
 
-        <Animated.Image style={{opacity: this.state.interred, top: 0, height: height, width: width, alignSelf: 'center', position: 'absolute'}} source={require('../assets/img/wolf.jpg')} />
 
       </Animated.View>
     );

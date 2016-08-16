@@ -18,7 +18,6 @@ Easing
 
 import * as Animatable from 'react-native-animatable';
 let {width, height} = Dimensions.get('window');
-import VideoCard from './components/VideoCard';
 
 import ListImp from './components/ListImp';
 

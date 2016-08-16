@@ -1,8 +1,6 @@
 package com.animatedplay;
 
 import com.facebook.react.ReactActivity;
-import com.brentvatne.RCTVideo.ReactVideoPackage;
-import com.BV.LinearGradient.LinearGradientPackage;
 
 public class MainActivity extends ReactActivity {
 
