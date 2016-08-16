@@ -16,7 +16,7 @@ export default class StaggeredScrollview extends Component {
     this.state = {
       scrollOffset: 0,
       // index of expanded model, otherwise is false
-      expandedModal: -1,
+      expandedModal: false,
       fadeAnim: new Animated.Value(0),
       time: 750,
       //temp value, usually replaced when component mounts, right now only works with uniform/mostly uniform rows
@@ -58,7 +58,6 @@ export default class StaggeredScrollview extends Component {
       rowHeight: event.nativeEvent.contentSize.height/this.props.children.length
     });
 
-    console.log(this.state.scrollOffset);
     while (((this.state.alreadyAnimated - 1) * this.state.rowHeight) <= (this.state.screenSpace + this.state.scrollOffset)) {
       this.state.visibleAnimations.push(Animated.timing(
         this.state.styleValues[this.state.alreadyAnimated - 1].animated,
@@ -188,23 +187,63 @@ export default class StaggeredScrollview extends Component {
                 }} >
 
                   <TouchableWithoutFeedback onPress={() => {
+                  let modalOpacity = new Animated.Value(0);
+                  let transformDriver = new Animated.Value(0);
+                  let modalTranslateY;
 
                     let ref = this.state.styleValues[key].ref;
+                    this.refs[ref].measure((x, y, width, height) =>{
 
-                    this.refs[ref].measure((x, y) =>{
-                    console.log(y);
-                      this.state.styleValues[key].modalTranslateY =
-                        this.state.styleValues[key].modalOpacity.interpolate({
+                    let offset = y - ((this.state.screenSpace - height)/2 + this.state.scrollOffset);
+
+                    console.log(offset);
+
+                      modalTranslateY =
+                        transformDriver.interpolate({
                           inputRange: [0, 1],
-                          outputRange: [y, 0]
-                        })});
+                          outputRange: [offset, 0]
+                        });
+                         this.setState({expandedModal: <Animated.View style={{
+                  opacity: modalOpacity,
+                  position: 'absolute',
+                  top: 0,
+                  height: this.state.screenSpace,
+                  width: width,
+                  backgroundColor: 'black',
+                  justifyContent: 'center'}}>
+                  <Animated.View style={{
+                    transform: [{translateY: modalTranslateY}]
+                  }}>
+  <TouchableWithoutFeedback onPress={() => this.setState({expandedModal: false})}>
+                      {child}
+                      </TouchableWithoutFeedback>
+                  </Animated.View>
+                </Animated.View>});
+                Animated.sequence([Animated.timing(
+                      modalOpacity,
+                      {
+                      toValue: 1,
+                      duration: 300,
+                      easing: Easing.easeIn
+                      }
+                    ),
+                    Animated.timing(
+                      transformDriver,
+                      {
+                      toValue: 1,
+                      duration: 400,
+                      easing: Easing.easeIn
+                      }
+                    )]).start();
+                        });
 
-                    this.setState({expandedModal: key});
+
 
                     Animated.timing(
                       this.state.styleValues[key].modalOpacity,
                       {
-                      toValue: 1
+                      toValue: 1,
+                      duration: 200
                       }
                     ).start();
 
@@ -216,7 +255,7 @@ export default class StaggeredScrollview extends Component {
               );})
             }
           </ScrollView>
-        {(this.state.expandedModal > -1) ? this.state.animatedModals[this.state.expandedModal] : null}
+        {(this.state.expandedModal ) ? this.state.expandedModal : null}
 
         <Animated.Image style={{opacity: this.state.interred, top: 0, height: height, width: width, alignSelf: 'center', position: 'absolute'}} source={require('../assets/img/wolf.jpg')} />
 
