@@ -15,21 +15,21 @@ export default class StaggeredScrollview extends Component {
 
     this.state = {
       scrollOffset: 0,
-      isExpanded: false,
+      // index of expanded model, otherwise is false
+      expandedModal: -1,
       fadeAnim: new Animated.Value(0),
       time: 750,
-      //temp value, ususally, replaced when component mounts, right now only works with uniform/mostly uniform rows
+      //temp value, usually replaced when component mounts, right now only works with uniform/mostly uniform rows
       rowHeight: 200,
       screenSpace: height,
       styleValues: [],
       visibleAnimations: [],
       interpolatedValues: [],
       scalingValues: [],
-      rotateValues: [],
+      animatedModals: [],
       alreadyAnimated: 0,
       endFade: new Animated.Value(0),
       interred: 0,
-      modal: false
     }
 
     this.state.interred = this.state.endFade.interpolate({
@@ -111,6 +111,7 @@ export default class StaggeredScrollview extends Component {
     // reset the array so not all animations are run again onscroll
     this.state.visibleAnimations = [];
   }
+
   render() {
 
     return (
@@ -125,50 +126,97 @@ export default class StaggeredScrollview extends Component {
             onScroll={this.handleScroll}
             scrollEventThrottle={100}
             showsVerticalScrollIndicator={false}>
+
             {this.props.children.map((child, key) => {
               this.state.styleValues.push(
                 {
+                  ref: "view" + key,
                   isExpanded: false,
                   animated: new Animated.Value(0),
                   scaling: new Animated.Value(1),
                   position: 'relative',
-                  isModalVisible: false
+                  modalOpacity: new Animated.Value(0),
+                  // temporary animated value to reference, this actually needs to be an interpolated value
                 }
               );
               this.state.styleValues[key].translateX = this.state.styleValues[key].animated.interpolate({
                 inputRange: [0, 1],
                 outputRange: [-50, 0]
               });
+              this.state.styleValues[key].modalTranslateY = this.state.styleValues[key].modalOpacity.interpolate({
+                inputRange: [0, 1],
+                outputRange: [-200, 0]
+              });
+
+              this.state.animatedModals.push(
+                <Animated.View style={{
+                  opacity: this.state.styleValues[key].modalOpacity,
+                  position: 'absolute',
+                  top: 0,
+                  height: this.state.screenSpace,
+                  width: width,
+                  backgroundColor: 'black',
+                  justifyContent: 'center'}}>
+                  <Animated.View style={{
+                    transform: [{translateY: this.state.styleValues[key].modalTranslateY}]
+                  }}>
+                    <TouchableWithoutFeedback onPress={() => {this.state.expandedModal = -1;
+                      Animated.timing(
+                        this.state.styleValues[key].modalOpacity,
+                        {
+                        toValue: 0,
+                        duration: 1000
+                        }
+                      ).start(status => status.finished ? this.setState({expandedModal: false}) : {});
+                      }}
+                    >
+                      {child}
+                    </TouchableWithoutFeedback>
+                  </Animated.View>
+                </Animated.View>
+              );
+
 
               return (
-                <Animated.View style={{
+                <View ref={"view" + key}>
+                <Animated.View
+                  style={{
                   opacity: this.state.styleValues[key].animated,
                   position: this.state.styleValues[key].position,
                   alignSelf: 'center',
-                  transform: [{translateX: this.state.styleValues[key].translateX}]
-                }} onLayout={ ({nativeEvent: {layout : {width: width, height: height}}}) => {
-                console.log('hello this was ran');
-                  this.state.styleValues[key].height = this.state.styleValues[key].scaling.interpolate({
-                    inputRange: [1, 2],
-                    outputRange: [height, this.state.screenSpace]
-                  });
-                  }}>
-                  <Modal
-                    animationType="fade"
-                    transparent={false}
-                  visible={this.state.styleValues[key].isModalVisible}>
-                   <View style={{backgroundColor: 'black', height: height, width: width, justifyContent: 'center'}}>
-                     <TouchableWithoutFeedback onPress={() => {this.state.styleValues[key].isModalVisible = false; this.forceUpdate()}}>
-                     {child}
-                   </TouchableWithoutFeedback></View>
-                    </Modal>
-                  <TouchableWithoutFeedback onPress={() => {this.state.styleValues[key].isModalVisible = true; this.forceUpdate()}}>
+                  transform: [{translateY: this.state.styleValues[key].translateX}]
+                }} >
+
+                  <TouchableWithoutFeedback onPress={() => {
+
+                    let ref = this.state.styleValues[key].ref;
+
+                    this.refs[ref].measure((x, y) =>{
+                    console.log(y);
+                      this.state.styleValues[key].modalTranslateY =
+                        this.state.styleValues[key].modalOpacity.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [y, 0]
+                        })});
+
+                    this.setState({expandedModal: key});
+
+                    Animated.timing(
+                      this.state.styleValues[key].modalOpacity,
+                      {
+                      toValue: 1
+                      }
+                    ).start();
+
+                    }}>
                   {child}
                     </TouchableWithoutFeedback>
                 </Animated.View>
+                  </View>
               );})
             }
           </ScrollView>
+        {(this.state.expandedModal > -1) ? this.state.animatedModals[this.state.expandedModal] : null}
 
         <Animated.Image style={{opacity: this.state.interred, top: 0, height: height, width: width, alignSelf: 'center', position: 'absolute'}} source={require('../assets/img/wolf.jpg')} />
 
