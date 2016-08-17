@@ -110,18 +110,15 @@ export default class StaggeredScrollview extends Component {
     this.state.visibleAnimations = [];
   }
 
-  renderModal(child, ref) {
+  renderModal(key, child, ref) {
 
   console.log('hello');
-
-    this.refs[ref].measure((x, y, width, height) =>{
 
       let modalOpacity = new Animated.Value(0);
       let transformDriver = new Animated.Value(0);
 
-      let offset = y - ((this.state.screenSpace - height)/2 + this.state.scrollOffset);
+      let offset = this.state.styleValues[key].y - ((this.state.screenSpace - this.state.styleValues[key].height)/2 + this.state.scrollOffset);
 
-      console.log(y);
 
       let modalTranslateY =
         transformDriver.interpolate({
@@ -138,7 +135,7 @@ export default class StaggeredScrollview extends Component {
                         width: width,
                         backgroundColor: 'black',
                         justifyContent: 'center'}}>
-                          <Animated.View style={{transform: [{translateY: modalTranslateY}]}}>
+                          <Animated.View style={{opacity: modalOpacity, transform: [{translateY: modalTranslateY}]}}>
                             <TouchableOpacity onPress={() => {
                               Animated.sequence([
                                 Animated.timing(
@@ -188,7 +185,6 @@ export default class StaggeredScrollview extends Component {
           }
         )
       ]).start();
-    });
   }
 
   render() {
@@ -220,7 +216,11 @@ export default class StaggeredScrollview extends Component {
               });
 
               return (
-                <View ref={"view" + key}>
+                <View ref={"view" + key}
+                      onLayout={ ({nativeEvent: {layout : {x: x, y: y, width: width, height: height}}}) => {
+this.state.styleValues[key].y = y;
+this.state.styleValues[key].height = height;
+}}>
                 <Animated.View
                   style={{
                   opacity: this.state.styleValues[key].animated,
@@ -229,7 +229,7 @@ export default class StaggeredScrollview extends Component {
                   transform: [{translateY: this.state.styleValues[key].translateX}]
                 }} >
 
-                  <TouchableOpacity onPress={() => this.renderModal(child, this.state.styleValues[key].ref)}>
+                  <TouchableOpacity onPress={() => this.renderModal(key, child, this.state.styleValues[key].ref)}>
                   {child}
                     </TouchableOpacity>
                 </Animated.View>
