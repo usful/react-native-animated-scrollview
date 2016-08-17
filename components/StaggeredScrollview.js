@@ -19,8 +19,9 @@ export default class StaggeredScrollview extends Component {
       expandedModal: false,
       fadeAnim: new Animated.Value(0),
       time: 750,
-      //temp value, usually replaced when component mounts, right now only works with uniform/mostly uniform rows
-      rowHeight: 200,
+      //temp value, usually replaced when component mounts scrolls, right now only works with uniform/mostly uniform rows
+      // TODO: figure out how to to get the length of the entire scrollview before scrolling to calculate the average rowHeight
+      rowHeight: 243,
       screenSpace: height,
       styleValues: [],
       visibleAnimations: [],
@@ -57,6 +58,8 @@ export default class StaggeredScrollview extends Component {
       rowHeight: event.nativeEvent.contentSize.height/this.props.children.length
     });
 
+    console.log(this.state.rowHeight);
+
     while (((this.state.alreadyAnimated - 1) * this.state.rowHeight) <= (this.state.screenSpace + this.state.scrollOffset)) {
       this.state.visibleAnimations.push(Animated.timing(
         this.state.styleValues[this.state.alreadyAnimated - 1].animated,
@@ -88,7 +91,7 @@ export default class StaggeredScrollview extends Component {
     // doesn't really need to use map, could just do with a for loop
     // it just creates animations and maps them to the animated values array
     this.state.styleValues.map((value, key) => {
-      if (((key + 1) * this.state.rowHeight) <= (this.state.screenSpace + this.state.scrollOffset)) {
+      if (((key) * this.state.rowHeight) <= (this.state.screenSpace)) {
         this.state.visibleAnimations.push(Animated.timing(
           this.state.styleValues[key].animated,
           {
@@ -110,81 +113,79 @@ export default class StaggeredScrollview extends Component {
     this.state.visibleAnimations = [];
   }
 
-  renderModal(key, child, ref) {
+  renderModal(key, child) {
 
-  console.log('hello');
+    let modalOpacity = new Animated.Value(0);
+    let transformDriver = new Animated.Value(0);
 
-      let modalOpacity = new Animated.Value(0);
-      let transformDriver = new Animated.Value(0);
-
-      let offset = this.state.styleValues[key].y - ((this.state.screenSpace - this.state.styleValues[key].height)/2 + this.state.scrollOffset);
+    let offset = this.state.styleValues[key].y - ((this.state.screenSpace - this.state.styleValues[key].height)/2 + this.state.scrollOffset);
 
 
-      let modalTranslateY =
-        transformDriver.interpolate({
-          inputRange: [0, 1],
-          outputRange: [offset, 0]
-        });
-
-      this.setState({
-        expandedModal: <Animated.View style={{
-                        opacity: modalOpacity,
-                        position: 'absolute',
-                        top: 0,
-                        height: this.state.screenSpace,
-                        width: width,
-                        backgroundColor: 'black',
-                        justifyContent: 'center'}}>
-                          <Animated.View style={{opacity: modalOpacity, transform: [{translateY: modalTranslateY}]}}>
-                            <TouchableOpacity onPress={() => {
-                              Animated.sequence([
-                                Animated.timing(
-                                  transformDriver,
-                                  {
-                                    fromValue: 1,
-                                    toValue: 0,
-                                    duration: 400,
-                                    easing: Easing.easeOut
-                                  }
-                                ),
-                                Animated.timing(
-                                  modalOpacity,
-                                  {
-                                    fromValue: 1,
-                                    toValue: 0,
-                                    duration: 300,
-                                    easing: Easing.easeOut
-                                  }
-                                ),
-                              ]).start(status => status.finished ? this.setState({expandedModal: false}) : {});
-
-                            }}>
-                              {child}
-                            </TouchableOpacity>
-                          </Animated.View>
-                        </Animated.View>
+    let modalTranslateY =
+      transformDriver.interpolate({
+        inputRange: [0, 1],
+        outputRange: [offset, 0]
       });
 
-      Animated.sequence([
-        Animated.timing(
-          modalOpacity,
-          {
-            fromValue: 0,
-            toValue: 1,
-            duration: 300,
-            easing: Easing.easeIn
-          }
-        ),
-        Animated.timing(
-          transformDriver,
-          {
-            fromValue: 0,
-            toValue: 1,
-            duration: 400,
-            easing: Easing.easeIn
-          }
-        )
-      ]).start();
+    this.setState({
+      expandedModal: <Animated.View style={{
+                      opacity: modalOpacity,
+                      position: 'absolute',
+                      top: 0,
+                      height: this.state.screenSpace,
+                      width: width,
+                      backgroundColor: 'black',
+                      justifyContent: 'center'}}>
+                        <Animated.View style={{opacity: modalOpacity, transform: [{translateY: modalTranslateY}]}}>
+                          <TouchableOpacity onPress={() => {
+                            Animated.sequence([
+                              Animated.timing(
+                                transformDriver,
+                                {
+                                  fromValue: 1,
+                                  toValue: 0,
+                                  duration: 400,
+                                  easing: Easing.easeOut
+                                }
+                              ),
+                              Animated.timing(
+                                modalOpacity,
+                                {
+                                  fromValue: 1,
+                                  toValue: 0,
+                                  duration: 300,
+                                  easing: Easing.easeOut
+                                }
+                              ),
+                            ]).start(status => status.finished ? this.setState({expandedModal: false}) : {});
+
+                          }}>
+                            {child}
+                          </TouchableOpacity>
+                        </Animated.View>
+                      </Animated.View>
+    });
+
+    Animated.sequence([
+      Animated.timing(
+        modalOpacity,
+        {
+          fromValue: 0,
+          toValue: 1,
+          duration: 300,
+          easing: Easing.easeIn
+        }
+      ),
+      Animated.timing(
+        transformDriver,
+        {
+          fromValue: 0,
+          toValue: 1,
+          duration: 400,
+          easing: Easing.easeIn
+        }
+      )
+    ]).start();
   }
 
   render() {
@@ -198,29 +199,29 @@ export default class StaggeredScrollview extends Component {
         opacity: this.state.fadeAnim
       }}>
         <ScrollView
-            onScroll={this.handleScroll}
-            scrollEventThrottle={35}
-            showsVerticalScrollIndicator={false}>
+          onScroll={this.handleScroll}
+          scrollEventThrottle={35}
+          showsVerticalScrollIndicator={false}>
 
-            {this.props.children.map((child, key) => {
-              this.state.styleValues.push(
-                {
-                  ref: "view" + key,
-                  animated: new Animated.Value(0),
-                  scaling: new Animated.Value(1),
-                }
-              );
-              this.state.styleValues[key].translateX = this.state.styleValues[key].animated.interpolate({
-                inputRange: [0, 1],
-                outputRange: [-50, 0]
-              });
+          {this.props.children.map((child, key) => {
 
-              return (
-                <View ref={"view" + key}
-                      onLayout={ ({nativeEvent: {layout : {x: x, y: y, width: width, height: height}}}) => {
-this.state.styleValues[key].y = y;
-this.state.styleValues[key].height = height;
-}}>
+            // pushing animation setup object per child
+            this.state.styleValues.push(
+              {
+                animated: new Animated.Value(0),
+                scaling: new Animated.Value(1),
+              }
+            );
+            this.state.styleValues[key].translateX = this.state.styleValues[key].animated.interpolate({
+              inputRange: [0, 1],
+              outputRange: [-50, 0]
+            });
+
+            return (
+              <View onLayout={ ({nativeEvent: {layout : {x: x, y: y, width: width, height: height}}}) => {
+                this.state.styleValues[key].y = y;
+                this.state.styleValues[key].height = height;
+              }}>
                 <Animated.View
                   style={{
                   opacity: this.state.styleValues[key].animated,
@@ -230,13 +231,13 @@ this.state.styleValues[key].height = height;
                 }} >
 
                   <TouchableOpacity onPress={() => this.renderModal(key, child, this.state.styleValues[key].ref)}>
-                  {child}
-                    </TouchableOpacity>
+                    {child}
+                  </TouchableOpacity>
                 </Animated.View>
-                  </View>
-              );})
-            }
-          </ScrollView>
+              </View>
+            );})
+          }
+        </ScrollView>
         {(this.state.expandedModal ) ? this.state.expandedModal : null}
 
 
