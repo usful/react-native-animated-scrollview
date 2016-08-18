@@ -29,13 +29,9 @@ export default class StaggeredScrollview extends Component {
       scalingValues: [],
       alreadyAnimated: 0,
       endFade: new Animated.Value(0),
+      isInterredCalculated: false,
       interred: 0,
     }
-
-    this.state.interred = this.state.endFade.interpolate({
-      inputRange: [1763, 1900],
-      outputRange: [0, .5]
-    });
 
     this.state.visibleAnimations.push(
       Animated.timing(
@@ -57,6 +53,14 @@ export default class StaggeredScrollview extends Component {
       scrollOffset: event.nativeEvent.contentOffset.y,
       rowHeight: event.nativeEvent.contentSize.height/this.props.children.length
     });
+
+    if (!this.state.isInterredCalculated) {
+      this.state.interred = this.state.endFade.interpolate({
+        inputRange: [event.nativeEvent.contentSize.height - this.state.screenSpace, event.nativeEvent.contentSize.height - this.state.screenSpace + 200],
+        outputRange: [0, .5]
+      });
+      this.state.isInterredCalculated = true;
+    }
 
     console.log(this.state.rowHeight);
 
@@ -240,7 +244,12 @@ export default class StaggeredScrollview extends Component {
         </ScrollView>
         {(this.state.expandedModal ) ? this.state.expandedModal : null}
 
-
+        <Animated.Image style={{
+          opacity: this.state.interred,
+          top: 0,
+          height: height,
+          width: width,
+          position: 'absolute'}} source={require('../assets/img/wolf.jpg')} />
       </Animated.View>
     );
   }
