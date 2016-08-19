@@ -21,7 +21,7 @@ export default class StaggeredScrollview extends Component {
       time: 750,
       //temp value, usually replaced when component mounts scrolls, right now only works with uniform/mostly uniform rows
       // TODO: figure out how to to get the length of the entire scrollview before scrolling to calculate the average rowHeight
-      rowHeight: 243,
+      rowHeight: 250,
       screenSpace: height,
       styleValues: [],
       visibleAnimations: [],
@@ -30,6 +30,7 @@ export default class StaggeredScrollview extends Component {
       alreadyAnimated: 0,
       endFade: new Animated.Value(0),
       isInterredCalculated: false,
+      maxScrollOffset: 0,
       interred: 0,
     }
 
@@ -55,8 +56,9 @@ export default class StaggeredScrollview extends Component {
     });
 
     if (!this.state.isInterredCalculated) {
+      this.state.maxScrollOffset = event.nativeEvent.contentSize.height - this.state.screenSpace;
       this.state.interred = this.state.endFade.interpolate({
-        inputRange: [event.nativeEvent.contentSize.height - this.state.screenSpace, event.nativeEvent.contentSize.height - this.state.screenSpace + 200],
+        inputRange: [this.state.maxScrollOffset, event.nativeEvent.contentSize.height - this.state.screenSpace + 200],
         outputRange: [0, .5]
       });
       this.state.isInterredCalculated = true;
@@ -83,6 +85,10 @@ export default class StaggeredScrollview extends Component {
     ).start();
     this.state.visibleAnimations = [];
 
+    this.state.styleValues.forEach((child) => {
+      child.parrallaxOffset.setValue(this.state.scrollOffset + this.state.screenSpace - child.y);
+    })
+
 
     if (this.state.scrollOffset > event.nativeEvent.contentSize.height - this.state.screenSpace) {
       console.log('ran this mate');
@@ -96,6 +102,7 @@ export default class StaggeredScrollview extends Component {
     // it just creates animations and maps them to the animated values array
     this.state.styleValues.map((value, key) => {
       if (((key) * this.state.rowHeight) <= (this.state.screenSpace)) {
+        this.state.styleValues[key].parrallaxOffset.setValue(this.state.screenSpace - key * this.state.rowHeight);
         this.state.visibleAnimations.push(Animated.timing(
           this.state.styleValues[key].animated,
           {
@@ -204,7 +211,7 @@ export default class StaggeredScrollview extends Component {
       }}>
         <ScrollView
           onScroll={this.handleScroll}
-          scrollEventThrottle={35}
+          scrollEventThrottle={100}
           showsVerticalScrollIndicator={false}>
 
           {this.props.children.map((child, key) => {
@@ -214,22 +221,23 @@ export default class StaggeredScrollview extends Component {
               {
                 animated: new Animated.Value(0),
                 scaling: new Animated.Value(1),
+                parrallaxOffset: new Animated.Value(0),
               }
             );
-            this.state.styleValues[key].translateX = this.state.styleValues[key].animated.interpolate({
-              inputRange: [0, 1],
-              outputRange: [-50, 0]
+            this.state.styleValues[key].translateX = this.state.styleValues[key].parrallaxOffset.interpolate({
+              inputRange: [0, this.state.screenSpace],
+              outputRange: [-150, 0]
             });
 
             return (
-              <View onLayout={ ({nativeEvent: {layout : {x: x, y: y, width: width, height: height}}}) => {
-                this.state.styleValues[key].y = y;
-                this.state.styleValues[key].height = height;
+              <View style={{overflow: 'hidden', height: this.state.rowHeight}}
+                onLayout={ ({nativeEvent: {layout : {x: x, y: y, width: width, height: height}}}) => {
+                  this.state.styleValues[key].y = y;
+                  this.state.styleValues[key].height = height;
               }}>
                 <Animated.View
                   style={{
                   opacity: this.state.styleValues[key].animated,
-                  position: this.state.styleValues[key].position,
                   alignSelf: 'center',
                   transform: [{translateY: this.state.styleValues[key].translateX}]
                 }} >
@@ -244,12 +252,12 @@ export default class StaggeredScrollview extends Component {
         </ScrollView>
         {(this.state.expandedModal ) ? this.state.expandedModal : null}
 
-        <Animated.Image style={{
+        {(this.state.scrollOffset > this.state.maxScrollOffset) ? <Animated.Image style={{
           opacity: this.state.interred,
           top: 0,
           height: height,
           width: width,
-          position: 'absolute'}} source={require('../assets/img/wolf.jpg')} />
+          position: 'absolute'}} source={require('../assets/img/wolf.jpg')} /> : null }
       </Animated.View>
     );
   }
