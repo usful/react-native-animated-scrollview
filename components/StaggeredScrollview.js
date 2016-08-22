@@ -21,7 +21,7 @@ export default class StaggeredScrollview extends Component {
       time: 750,
       //temp value, usually replaced when component mounts scrolls, right now only works with uniform/mostly uniform rows
       // TODO: figure out how to to get the length of the entire scrollview before scrolling to calculate the average rowHeight
-      rowHeight: 250,
+      rowHeight: 300,
       screenSpace: height,
       styleValues: [],
       visibleAnimations: [],
@@ -50,9 +50,8 @@ export default class StaggeredScrollview extends Component {
   }
 
   handleScroll(event) {
-  this.setState({
+   this.setState({
       scrollOffset: event.nativeEvent.contentOffset.y,
-      rowHeight: event.nativeEvent.contentSize.height/this.props.children.length
     });
 
     if (!this.state.isInterredCalculated) {
@@ -63,8 +62,6 @@ export default class StaggeredScrollview extends Component {
       });
       this.state.isInterredCalculated = true;
     }
-
-    console.log(this.state.rowHeight);
 
     while (((this.state.alreadyAnimated - 1) * this.state.rowHeight) <= (this.state.screenSpace + this.state.scrollOffset)) {
       this.state.visibleAnimations.push(Animated.timing(
@@ -124,18 +121,24 @@ export default class StaggeredScrollview extends Component {
     this.state.visibleAnimations = [];
   }
 
-  renderModal(key, child) {
+  renderModal(child, style) {
 
     let modalOpacity = new Animated.Value(0);
     let transformDriver = new Animated.Value(0);
 
-    let offset = this.state.styleValues[key].y - ((this.state.screenSpace - this.state.styleValues[key].height)/2 + this.state.scrollOffset);
+    let offset = style.y - ((this.state.screenSpace - style.height)/2 + this.state.scrollOffset);
 
 
     let modalTranslateY =
       transformDriver.interpolate({
         inputRange: [0, 1],
         outputRange: [offset, 0]
+      });
+
+    let expandView =
+      transformDriver.interpolate({
+        inputRange: [0, 1],
+        outputRange: [this.state.rowHeight, style.actualHeight]
       });
 
     this.setState({
@@ -147,7 +150,7 @@ export default class StaggeredScrollview extends Component {
                       width: width,
                       backgroundColor: 'black',
                       justifyContent: 'center'}}>
-                        <Animated.View style={{opacity: modalOpacity, transform: [{translateY: modalTranslateY}]}}>
+                        <Animated.View style={{overflow: "hidden", opacity: modalOpacity, height: expandView, transform: [{translateY: modalTranslateY}]}}>
                           <TouchableOpacity onPress={() => {
                             Animated.sequence([
                               Animated.timing(
@@ -240,9 +243,11 @@ export default class StaggeredScrollview extends Component {
                   opacity: this.state.styleValues[key].animated,
                   alignSelf: 'center',
                   transform: [{translateY: this.state.styleValues[key].translateX}]
-                }} >
+                }} onLayout={ ({nativeEvent: {layout : {x: x, y: y, width: width, height: height}}}) => {
+                  this.state.styleValues[key].actualHeight = height;
+              }}>
 
-                  <TouchableOpacity onPress={() => this.renderModal(key, child, this.state.styleValues[key].ref)}>
+                  <TouchableOpacity onPress={() => this.renderModal(child, this.state.styleValues[key])}>
                     {child}
                   </TouchableOpacity>
                 </Animated.View>
