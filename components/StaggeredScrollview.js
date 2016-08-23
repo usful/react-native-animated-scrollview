@@ -83,7 +83,10 @@ export default class StaggeredScrollview extends Component {
     this.state.visibleAnimations = [];
 
     this.state.styleValues.forEach((child) => {
-      child.parrallaxOffset.setValue(this.state.scrollOffset + (this.state.screenSpace - this.props.rowHeight) - child.y);
+      if ((child.y + this.props.rowHeight >= this.state.scrollOffset) && (child.y <= this.state.scrollOffset + this.state.screenSpace)) {
+        console.log('ran');
+        child.parrallaxOffset.setValue(this.state.scrollOffset + (this.state.screenSpace - this.props.rowHeight) - child.y);
+      }
     })
 
 
@@ -151,7 +154,7 @@ export default class StaggeredScrollview extends Component {
                       backgroundColor: 'black',
                       justifyContent: 'center'}}>
                         <Animated.View style={{overflow: "hidden", opacity: modalOpacity, height: expandView, transform: [{translateY: modalTranslateY}]}}>
-                          <TouchableOpacity onPress={() => {
+                          <TouchableOpacity style={{alignItems: 'center'}} onPress={() => {
                             Animated.sequence([
                               Animated.timing(
                                 transformDriver,
@@ -241,13 +244,14 @@ export default class StaggeredScrollview extends Component {
                 <Animated.View
                   style={{
                   opacity: this.state.styleValues[key].animated,
-                  alignSelf: 'center',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   transform: [{translateY: this.state.styleValues[key].translateY}]
                 }} onLayout={ ({nativeEvent: {layout : {height: height}}}) => {
                   this.state.styleValues[key].actualHeight = height;
               }}>
 
-                  <TouchableOpacity onPress={() => this.renderModal(child, this.state.styleValues[key])}>
+                  <TouchableOpacity style={{alignItems: 'center'}} onPress={() => this.renderModal(child, this.state.styleValues[key])}>
                     {child}
                   </TouchableOpacity>
                 </Animated.View>

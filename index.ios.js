@@ -63,16 +63,14 @@ class AnimatedPlay extends Component {
       <View style={{ flex:1, backgroundColor: 'transparent' }}>
           <Animated.Image style={{opacity: this.state.fadeAnim, height: height, width: width, alignSelf: 'center', position: 'absolute'}} source={require('./assets/img/Game-of-Thrones-Wallpapers-Black-640x960-iphone-4-4s.jpg')} />
         <StaggeredScrollview style={styles.container}>
-          <Image resizeMode="cover" style={{height: 400}} source={require('./assets/img/ddragon.gif')} />
-          <Image resizeMode="cover" style={{height: 400}}source={require('./assets/img/siblings.gif')} />
-          <Image resizeMode="cover" style={{height: 400}}source={require('./assets/img/drogo.gif')} />
-          <Image resizeMode="cover" style={{height: 400}}source={require('./assets/img/Jon.gif')} />
-          <Image resizeMode="cover" style={{height: 400}}source={require('./assets/img/giphy.gif')} />
-          <Image resizeMode="cover" style={{height: 400}}source={require('./assets/img/ddragon.gif')} />
-          <Image resizeMode="cover" style={{height: 400}}source={require('./assets/img/siblings.gif')} />
-          <Image resizeMode="cover" style={{height: 400}}source={require('./assets/img/drogo.gif')} />
-          <Image resizeMode="cover" style={{height: 400}}source={require('./assets/img/Jon.gif')} />
-          <Image resizeMode="cover" style={{height: 400}}source={require('./assets/img/giphy.gif')} />
+          <Image resizeMode="cover" style={{height: 400}} source={require('./assets/img/atsea.jpg')} />
+          <Image resizeMode="cover" style={{height: 400}}source={require('./assets/img/icequeen.jpg')} />
+          <Image resizeMode="cover" style={{height: 400}}source={require('./assets/img/icetree.jpg')} />
+          <Image resizeMode="cover" style={{height: 400}}source={require('./assets/img/tree.jpg')} />
+          <Image resizeMode="cover" style={{height: 400}}source={require('./assets/img/firecircle.jpg')} />
+          <Image resizeMode="cover" style={{height: 400}}source={require('./assets/img/flayed.jpg')} />
+          <Image resizeMode="cover" style={{height: 400}}source={require('./assets/img/one.jpg')} />
+          <Image resizeMode="cover" style={{height: 400}}source={require('./assets/img/blackandwhite.jpg')} />
           </StaggeredScrollview>
 
         </View>
