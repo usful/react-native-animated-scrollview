@@ -135,6 +135,16 @@ export default class StaggeredScrollview extends Component {
         outputRange: [offset, 0]
       });
 
+    let parrallaxOffset = (this.state.scrollOffset + (this.state.screenSpace - this.props.rowHeight) - style.y)/(this.state.screenSpace-this.props.rowHeight)*(160) - 180;
+
+    console.log(parrallaxOffset);
+
+    let parrallaxTranslateY =
+      transformDriver.interpolate({
+        inputRange: [0, 1],
+        outputRange: [parrallaxOffset, 0]
+      });
+
     let expandView =
       transformDriver.interpolate({
         inputRange: [0, 1],
@@ -151,6 +161,7 @@ export default class StaggeredScrollview extends Component {
                       backgroundColor: 'black',
                       justifyContent: 'center'}}>
                         <Animated.View style={{overflow: "hidden", opacity: modalOpacity, height: expandView, transform: [{translateY: modalTranslateY}]}}>
+                          <Animated.View style={{transform: [{translateY: parrallaxTranslateY}]}}>
                           <TouchableOpacity style={{alignItems: 'center'}} onPress={() => {
                             Animated.sequence([
                               Animated.timing(
@@ -176,6 +187,7 @@ export default class StaggeredScrollview extends Component {
                           }}>
                             {child}
                           </TouchableOpacity>
+                            </Animated.View>
                         </Animated.View>
                       </Animated.View>
     });
@@ -214,7 +226,7 @@ export default class StaggeredScrollview extends Component {
       }}>
         <ScrollView
           onScroll={this.handleScroll}
-          scrollEventThrottle={35}
+          scrollEventThrottle={16}
           showsVerticalScrollIndicator={false}>
 
           {this.props.children.map((child, key) => {
@@ -230,7 +242,7 @@ export default class StaggeredScrollview extends Component {
             // TODO: Need to find a way to calculate the interpolation output range
             this.state.styleValues[key].translateY = this.state.styleValues[key].parrallaxOffset.interpolate({
               inputRange: [0, this.state.screenSpace - this.props.rowHeight],
-              outputRange: [-200, -10],
+              outputRange: [-180, -20],
             });
 
             return (
