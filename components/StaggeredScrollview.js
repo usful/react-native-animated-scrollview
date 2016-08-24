@@ -5,8 +5,6 @@
 import React, {Component} from 'react';
 import {Animated, ScrollView, View, Text, StyleSheet, Dimensions, Easing, Image, TouchableOpacity, Modal} from 'react-native';
 
-import AnimatedWrapper from './AnimatedWrapper';
-
 let {width, height} = Dimensions.get('window');
 export default class StaggeredScrollview extends Component {
 
@@ -22,7 +20,6 @@ export default class StaggeredScrollview extends Component {
       // index of expanded child, otherwise it's false
       expandedModal: false,
       fadeAnim: new Animated.Value(0),
-      time: 750,
       rowHeight: 300,
       screenSpace: height,
       styleValues: [],
@@ -217,7 +214,7 @@ export default class StaggeredScrollview extends Component {
       }}>
         <ScrollView
           onScroll={this.handleScroll}
-          scrollEventThrottle={100}
+          scrollEventThrottle={35}
           showsVerticalScrollIndicator={false}>
 
           {this.props.children.map((child, key) => {
@@ -227,12 +224,13 @@ export default class StaggeredScrollview extends Component {
               {
                 animated: new Animated.Value(0),
                 scaling: new Animated.Value(1),
-                parrallaxOffset: new Animated.Value(200),
+                parrallaxOffset: new Animated.Value(0),
               }
             );
+            // TODO: Need to find a way to calculate the interpolation output range
             this.state.styleValues[key].translateY = this.state.styleValues[key].parrallaxOffset.interpolate({
               inputRange: [0, this.state.screenSpace - this.props.rowHeight],
-              outputRange: [-200, 0]
+              outputRange: [-200, -10],
             });
 
             return (
