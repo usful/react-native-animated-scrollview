@@ -1,4 +1,4 @@
-package com.animatedplay;
+package com.gotexample;
 
 import android.app.Application;
 import android.util.Log;

@@ -82,7 +82,6 @@ export default class StaggeredScrollview extends Component {
 
     this.state.styleValues.forEach((child) => {
       if ((child.y + this.props.rowHeight >= this.state.scrollOffset) && (child.y <= this.state.scrollOffset + this.state.screenSpace)) {
-        console.log('ran');
         child.parrallaxOffset.setValue(this.state.scrollOffset + (this.state.screenSpace - this.props.rowHeight) - child.y);
       }
     })

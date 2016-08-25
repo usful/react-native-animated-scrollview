@@ -1,7 +1,3 @@
-rootProject.name = 'AnimatedPlay'
+rootProject.name = 'GoTExample'
 
 include ':app'
-include ':react-native-video'
-project(':react-native-video').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-video/android')
-include ':react-native-linear-gradient'
-project(':react-native-linear-gradient').projectDir = new File(rootProject.projectDir, '../node_modules/react-native-linear-gradient/android')
