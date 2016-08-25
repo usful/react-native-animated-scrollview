@@ -46,6 +46,7 @@ export default class StaggeredScrollview extends Component {
     this.handleScroll = this.handleScroll.bind(this);
   }
 
+  // TODO: instead of manually setting the values, implement using animated events that directly hook into the onscroll event
   handleScroll(event) {
    this.setState({
       scrollOffset: event.nativeEvent.contentOffset.y,
@@ -135,6 +136,7 @@ export default class StaggeredScrollview extends Component {
         outputRange: [offset, 0]
       });
 
+    // this gets the interpolated value of the parrallax offset, is there a better way to do this?
     let parrallaxOffset = (this.state.scrollOffset + (this.state.screenSpace - this.props.rowHeight) - style.y)/(this.state.screenSpace-this.props.rowHeight)*(160) - 180;
 
     console.log(parrallaxOffset);

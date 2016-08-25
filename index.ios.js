@@ -11,15 +11,13 @@ import {
   StyleSheet,
   Text,
   View,
-Image,
-Dimensions,
-Easing
+  Image,
+  Dimensions,
+  Easing
 } from 'react-native';
 
-import * as Animatable from 'react-native-animatable';
 let {width, height} = Dimensions.get('window');
 
-import ListImp from './components/ListImp';
 
 import StaggeredScrollview from './components/StaggeredScrollview';
 console.disableYellowBox = true;
