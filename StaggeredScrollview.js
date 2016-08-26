@@ -17,7 +17,7 @@ export default class StaggeredScrollview extends Component {
     
     this.state = {
       scrollOffset: 0,
-      // index of expanded child, otherwise it's false
+      // the index of expanded child, otherwise it's false
       expandedModal: false,
       fadeAnim: new Animated.Value(0),
       rowHeight: 300,

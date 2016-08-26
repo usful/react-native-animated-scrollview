@@ -19,7 +19,7 @@ import {
 let {width, height} = Dimensions.get('window');
 
 
-import StaggeredScrollview from './components/StaggeredScrollview';
+import StaggeredScrollview from './StaggeredScrollview';
 
 
 
