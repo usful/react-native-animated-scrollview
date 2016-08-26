@@ -56,6 +56,7 @@ export default class GoTExample extends Component {
   render() {
     return (
       <View style={{ flex:1, backgroundColor: 'transparent' }}>
+        /* just an intro splash page to spice things up */
         <Animated.Image style={{opacity: this.state.fadeAnim, height: height, width: width, alignSelf: 'center', position: 'absolute'}} source={require('./assets/img/Game-of-Thrones-Wallpapers-Black-640x960-iphone-4-4s.jpg')} />
         <AnimatedScrollView delay={3700} parrallaxOutputMax={180} parrallaxOutputMin={20} footerImage={<Image source={require('./assets/img/wolf.jpg')} />}>
           <Image resizeMode="cover" style={{height: 400}} source={require('./assets/img/atsea.jpg')} />

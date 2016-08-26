@@ -62,15 +62,17 @@ export default class AnimatedScrollView extends Component {
 
     // adds animations of visible elements to the stack
     while (((this.state.alreadyAnimated - 1) * this.props.rowHeight) <= (this.state.screenSpace + this.state.scrollOffset)) {
-      this.state.visibleAnimations.push(Animated.timing(
-        this.state.styleValues[this.state.alreadyAnimated - 1].animated,
-        {
-          fromValue: 0,
-          toValue: 1,
-          duration: 500,
-          easing: Easing.easeIn
-        }
-      ));
+      this.state.visibleAnimations.push(
+        Animated.timing(
+          this.state.styleValues[this.state.alreadyAnimated - 1].animated,
+          {
+            fromValue: 0,
+            toValue: 1,
+            duration: 500,
+            easing: Easing.easeIn
+          }
+        )
+      );
 
       ++this.state.alreadyAnimated;
     }
@@ -116,15 +118,18 @@ export default class AnimatedScrollView extends Component {
     // creates animations and maps them to the animated values array for the first visible elements
     while (((key) * this.props.rowHeight) <= (this.state.screenSpace)) {
       this.state.styleValues[key].parrallaxOffset.setValue(this.state.screenSpace - this.props.rowHeight - key * this.props.rowHeight);
-      this.state.visibleAnimations.push(Animated.timing(
-        this.state.styleValues[key].animated,
-        {
-          fromValue: 0,
-          toValue: 1,
-          duration: 500,
-          easing: Easing.easeIn
-        }
-      ));
+      this.state.visibleAnimations.push(
+        Animated.timing(
+          this.state.styleValues[key].animated,
+          {
+            fromValue: 0,
+            toValue: 1,
+            duration: 500,
+            easing: Easing.easeIn
+          }
+        )
+      );
+
       ++key;
     }
 
@@ -155,8 +160,6 @@ export default class AnimatedScrollView extends Component {
     // manually calculates the interpolated value of the parrallax offset, is there a better way to do this?
     let parrallaxOffset = (this.state.scrollOffset + (this.state.screenSpace - this.props.rowHeight) - style.y)/(this.state.screenSpace-this.props.rowHeight)*(this.props.parrallaxOutputMax-this.props.parrallaxOutputMin) - this.props.parrallaxOutputMax;
 
-    console.log(parrallaxOffset);
-
     let parrallaxTranslateY =
       transformDriver.interpolate({
         inputRange: [0, 1],
@@ -170,39 +173,44 @@ export default class AnimatedScrollView extends Component {
       });
 
     this.setState({
-      expandedModal: <Animated.View style={{
-                      opacity: modalOpacity,
-                      position: 'absolute',
-                      top: 0,
-                      height: this.state.screenSpace,
-                      width: width,
-                      backgroundColor: 'black',
-                      justifyContent: 'center'}}>
+      expandedModal:
+        <Animated.View
+          style={{
+            opacity: modalOpacity,
+            position: 'absolute',
+            top: 0,
+            height: this.state.screenSpace,
+            width: width,
+            backgroundColor: 'black',
+            justifyContent: 'center'
+        }}>
         <Animated.View style={{overflow: "hidden", opacity: modalOpacity, height: expandView, transform: [{translateY: modalTranslateY}]}}>
           <Animated.View style={{transform: [{translateY: parrallaxTranslateY}]}}>
-            <TouchableOpacity style={{alignItems: 'center'}} onPress={() => {
-                              Animated.sequence([
-                                Animated.timing(
-                                  transformDriver,
-                                  {
-                                    fromValue: 1,
-                                    toValue: 0,
-                                    duration: 400,
-                                    easing: Easing.easeOut
-                                  }
-                                ),
-                                Animated.timing(
-                                  modalOpacity,
-                                  {
-                                    fromValue: 1,
-                                    toValue: 0,
-                                    duration: 300,
-                                    easing: Easing.easeOut
-                                  }
-                                ),
-                              ]).start(status => status.finished ? this.setState({expandedModal: false}) : {});
-
-                            }}>
+            <TouchableOpacity style={{alignItems: 'center'}}
+              onPress={() => {
+                // fading out modal animation sequence
+                Animated.sequence([
+                  Animated.timing(
+                    transformDriver,
+                    {
+                      fromValue: 1,
+                      toValue: 0,
+                      duration: 400,
+                      easing: Easing.easeOut
+                    }
+                  ),
+                  Animated.timing(
+                    modalOpacity,
+                    {
+                      fromValue: 1,
+                      toValue: 0,
+                      duration: 300,
+                      easing: Easing.easeOut
+                    }
+                  ),
+                ]).start(status => status.finished ? this.setState({expandedModal: false}) : {});
+              }}
+            >
               {child}
             </TouchableOpacity>
           </Animated.View>
@@ -210,6 +218,7 @@ export default class AnimatedScrollView extends Component {
       </Animated.View>
     });
 
+    // fading in modal animation sequence
     Animated.sequence([
       Animated.timing(
         modalOpacity,
@@ -259,6 +268,7 @@ export default class AnimatedScrollView extends Component {
                 parrallaxOffset: new Animated.Value(0),
               }
             );
+
             // TODO: Need to find a way to calculate the interpolation output range
             this.state.styleValues[key].translateY = this.state.styleValues[key].parrallaxOffset.interpolate({
               inputRange: [0, this.state.screenSpace - this.props.rowHeight],
@@ -290,7 +300,11 @@ export default class AnimatedScrollView extends Component {
         </ScrollView>
         {(this.state.expandedModal ) ? this.state.expandedModal : null}
 
-        {(this.props.footerImage && (this.state.scrollOffset > this.state.maxScrollOffset + 20)) ? this.props.footerImage : null }
+        /* TODO: figure out how to centre and contain the image */
+        {(this.props.footerImage && (this.state.scrollOffset > this.state.maxScrollOffset + 20)) ?
+          <Animated.View style={{opacity: this.state.interred, alignItems: 'center', justifyContent: 'center', position: 'absolute', top: 0}}>
+            {this.props.footerImage}
+          </Animated.View>: null }
       </Animated.View>
     );
   }
