@@ -8,5 +8,27 @@
   "dependencies": {
     "react": "15.2.1",
     "react-native": "^0.30.0"
-  }
+  },
+  "description": "A react component scrollview that animates each element, with support for expanding each element.",
+  "main": "AnimatedScrollView.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/usful/react-native-animated-scrollview.git"
+  },
+  "keywords": [
+    "react-native",
+    "react-native-component",
+    "scrollview",
+    "animated",
+    "component",
+    "ios",
+    "android",
+    "parrallax"
+  ],
+  "author": "usful",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/usful/react-native-animated-scrollview/issues"
+  },
+  "homepage": "https://github.com/usful/react-native-animated-scrollview#readme"
 }
