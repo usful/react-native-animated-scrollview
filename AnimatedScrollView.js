@@ -1,20 +1,29 @@
-/**
- * Created by zhirui on 8/3/16.
- */
-
 import React, {Component} from 'react';
 import {Animated, ScrollView, View, Text, StyleSheet, Dimensions, Easing, Image, TouchableOpacity, Modal} from 'react-native';
 
 let {width, height} = Dimensions.get('window');
-export default class StaggeredScrollview extends Component {
+export default class AnimatedScrollView extends Component {
 
   static defaultProps = {
-    rowHeight: 200
+    // max value must be size of image
+    // should be less than image size if parrallax effect is desired
+    rowHeight: 200,
+    // the higher the difference between Min and Max value, the greater the parrallax effect, if both numbers are the same, there will not be parrallax
+    // max value is the difference between the actual image size and the rowHeight, but should be lower if using parrallax,
+    // otherwise scrolling down will create separation between the images, the greater the margin, the faster it can be scrolled,
+    // without seeing the separation
+    parrallaxOutputMax: 0,
+    // minimum is 0, but if using parrallax, should be higher in order to create a buffer for the image or scrolling
+    // up may create separation between the images briefly
+    parrallaxOutputMin: 0,
+    footerImage: null,
+    // delays the entire scrollView animation; scrollview animations only begin past the delay
+    delay: 0,
   };
-  
+
   constructor(props) {
     super(props);
-    
+
     this.state = {
       scrollOffset: 0,
       // the index of expanded child, otherwise it's false
@@ -32,27 +41,16 @@ export default class StaggeredScrollview extends Component {
       maxScrollOffset: 0,
     }
 
-    this.state.visibleAnimations.push(
-      Animated.timing(
-      this.state.fadeAnim,
-      {
-        fromValue: 0,
-        toValue: 1,
-        duration: 1000,
-        easing: Easing.easeIn,
-        delay: 2800
-      })
-    );
-
     this.handleScroll = this.handleScroll.bind(this);
   }
 
   // TODO: instead of manually setting the values, implement using animated events that directly hook into the onscroll event
   handleScroll(event) {
-   this.setState({
+    this.setState({
       scrollOffset: event.nativeEvent.contentOffset.y,
     });
 
+    // calculates interpolation for footer image
     if (!this.state.isInterredCalculated) {
       this.state.maxScrollOffset = event.nativeEvent.contentSize.height - this.state.screenSpace;
       this.state.interred = this.state.footerAnim.interpolate({
@@ -62,6 +60,7 @@ export default class StaggeredScrollview extends Component {
       this.state.isInterredCalculated = true;
     }
 
+    // adds animations of visible elements to the stack
     while (((this.state.alreadyAnimated - 1) * this.props.rowHeight) <= (this.state.screenSpace + this.state.scrollOffset)) {
       this.state.visibleAnimations.push(Animated.timing(
         this.state.styleValues[this.state.alreadyAnimated - 1].animated,
@@ -79,8 +78,10 @@ export default class StaggeredScrollview extends Component {
     Animated.sequence(
       this.state.visibleAnimations
     ).start();
+    // emptying array so so animations already ran will not occur again
     this.state.visibleAnimations = [];
 
+    // changing the parrallax offset of each visible child
     this.state.styleValues.forEach((child) => {
       if ((child.y + this.props.rowHeight >= this.state.scrollOffset) && (child.y <= this.state.scrollOffset + this.state.screenSpace)) {
         child.parrallaxOffset.setValue(this.state.scrollOffset + (this.state.screenSpace - this.props.rowHeight) - child.y);
@@ -94,7 +95,21 @@ export default class StaggeredScrollview extends Component {
     }
   }
 
+
+
   componentDidMount() {
+
+    this.state.visibleAnimations.push(
+      Animated.timing(
+        this.state.fadeAnim,
+        {
+          fromValue: 0,
+          toValue: 1,
+          duration: 0,
+          delay: this.props.delay
+        }
+      )
+    );
 
     let key = 0;
 
@@ -122,6 +137,8 @@ export default class StaggeredScrollview extends Component {
     this.state.visibleAnimations = [];
   }
 
+
+
   renderModal(child, style) {
 
     let modalOpacity = new Animated.Value(0);
@@ -129,15 +146,14 @@ export default class StaggeredScrollview extends Component {
 
     let offset = style.y - ((this.state.screenSpace - style.height)/2 + this.state.scrollOffset);
 
-
     let modalTranslateY =
       transformDriver.interpolate({
         inputRange: [0, 1],
         outputRange: [offset, 0]
       });
 
-    // this gets the interpolated value of the parrallax offset, is there a better way to do this?
-    let parrallaxOffset = (this.state.scrollOffset + (this.state.screenSpace - this.props.rowHeight) - style.y)/(this.state.screenSpace-this.props.rowHeight)*(160) - 180;
+    // manually calculates the interpolated value of the parrallax offset, is there a better way to do this?
+    let parrallaxOffset = (this.state.scrollOffset + (this.state.screenSpace - this.props.rowHeight) - style.y)/(this.state.screenSpace-this.props.rowHeight)*(this.props.parrallaxOutputMax-this.props.parrallaxOutputMin) - this.props.parrallaxOutputMax;
 
     console.log(parrallaxOffset);
 
@@ -162,36 +178,36 @@ export default class StaggeredScrollview extends Component {
                       width: width,
                       backgroundColor: 'black',
                       justifyContent: 'center'}}>
-                        <Animated.View style={{overflow: "hidden", opacity: modalOpacity, height: expandView, transform: [{translateY: modalTranslateY}]}}>
-                          <Animated.View style={{transform: [{translateY: parrallaxTranslateY}]}}>
-                          <TouchableOpacity style={{alignItems: 'center'}} onPress={() => {
-                            Animated.sequence([
-                              Animated.timing(
-                                transformDriver,
-                                {
-                                  fromValue: 1,
-                                  toValue: 0,
-                                  duration: 400,
-                                  easing: Easing.easeOut
-                                }
-                              ),
-                              Animated.timing(
-                                modalOpacity,
-                                {
-                                  fromValue: 1,
-                                  toValue: 0,
-                                  duration: 300,
-                                  easing: Easing.easeOut
-                                }
-                              ),
-                            ]).start(status => status.finished ? this.setState({expandedModal: false}) : {});
+        <Animated.View style={{overflow: "hidden", opacity: modalOpacity, height: expandView, transform: [{translateY: modalTranslateY}]}}>
+          <Animated.View style={{transform: [{translateY: parrallaxTranslateY}]}}>
+            <TouchableOpacity style={{alignItems: 'center'}} onPress={() => {
+                              Animated.sequence([
+                                Animated.timing(
+                                  transformDriver,
+                                  {
+                                    fromValue: 1,
+                                    toValue: 0,
+                                    duration: 400,
+                                    easing: Easing.easeOut
+                                  }
+                                ),
+                                Animated.timing(
+                                  modalOpacity,
+                                  {
+                                    fromValue: 1,
+                                    toValue: 0,
+                                    duration: 300,
+                                    easing: Easing.easeOut
+                                  }
+                                ),
+                              ]).start(status => status.finished ? this.setState({expandedModal: false}) : {});
 
-                          }}>
-                            {child}
-                          </TouchableOpacity>
-                            </Animated.View>
-                        </Animated.View>
-                      </Animated.View>
+                            }}>
+              {child}
+            </TouchableOpacity>
+          </Animated.View>
+        </Animated.View>
+      </Animated.View>
     });
 
     Animated.sequence([
@@ -215,6 +231,8 @@ export default class StaggeredScrollview extends Component {
       )
     ]).start();
   }
+
+
 
   render() {
 
@@ -244,12 +262,12 @@ export default class StaggeredScrollview extends Component {
             // TODO: Need to find a way to calculate the interpolation output range
             this.state.styleValues[key].translateY = this.state.styleValues[key].parrallaxOffset.interpolate({
               inputRange: [0, this.state.screenSpace - this.props.rowHeight],
-              outputRange: [-180, -20],
+              outputRange: [-this.props.parrallaxOutputMax, -this.props.parrallaxOutputMin],
             });
 
             return (
               <View style={{overflow: 'hidden', height: this.props.rowHeight}}
-                onLayout={ ({nativeEvent: {layout : {x: x, y: y, width: width, height: height}}}) => {
+                    onLayout={ ({nativeEvent: {layout : {y: y, height: height}}}) => {
                   this.state.styleValues[key].y = y;
                   this.state.styleValues[key].height = height;
               }}>
@@ -272,22 +290,8 @@ export default class StaggeredScrollview extends Component {
         </ScrollView>
         {(this.state.expandedModal ) ? this.state.expandedModal : null}
 
-        {(this.state.scrollOffset > this.state.maxScrollOffset + 20) ? <Animated.Image style={{
-          opacity: this.state.interred,
-          top: 0,
-          height: height,
-          width: width,
-          position: 'absolute'}} source={require('./img/wolf.jpg')} /> : null }
+        {(this.props.footerImage && (this.state.scrollOffset > this.state.maxScrollOffset + 20)) ? this.props.footerImage : null }
       </Animated.View>
     );
   }
 }
-
-const styles = StyleSheet.create({
-  view: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'transparent',
-  }
-})
