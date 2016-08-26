@@ -1,5 +1,5 @@
 /**
- * Sample React Native App
+ * Sample app using animated scroll
  * https://github.com/facebook/react-native
  * @flow
  */
@@ -82,6 +82,3 @@ export default class GoTExample extends Component {
     );
   }
 }
-
-const styles = StyleSheet.create({
-});

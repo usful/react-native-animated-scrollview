@@ -26,9 +26,10 @@ export default class StaggeredScrollview extends Component {
       visibleAnimations: [],
       alreadyAnimated: 0,
       footerAnim: new Animated.Value(0),
+      // interpolated value for the footer animation
+      interred: 0,
       isInterredCalculated: false,
       maxScrollOffset: 0,
-      interred: 0,
     }
 
     this.state.visibleAnimations.push(
@@ -55,7 +56,7 @@ export default class StaggeredScrollview extends Component {
     if (!this.state.isInterredCalculated) {
       this.state.maxScrollOffset = event.nativeEvent.contentSize.height - this.state.screenSpace;
       this.state.interred = this.state.footerAnim.interpolate({
-        inputRange: [this.state.maxScrollOffset + 20, event.nativeEvent.contentSize.height - this.state.screenSpace + 200],
+        inputRange: [this.state.maxScrollOffset + 20, this.state.maxScrollOffset + 200],
         outputRange: [0, .5]
       });
       this.state.isInterredCalculated = true;
@@ -260,8 +261,7 @@ export default class StaggeredScrollview extends Component {
                   transform: [{translateY: this.state.styleValues[key].translateY}]
                 }} onLayout={ ({nativeEvent: {layout : {height: height}}}) => {
                   this.state.styleValues[key].actualHeight = height;
-              }}>
-
+                }}>
                   <TouchableOpacity style={{alignItems: 'center'}} onPress={() => this.renderModal(child, this.state.styleValues[key])}>
                     {child}
                   </TouchableOpacity>
