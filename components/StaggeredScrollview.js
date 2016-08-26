@@ -277,7 +277,7 @@ export default class StaggeredScrollview extends Component {
           top: 0,
           height: height,
           width: width,
-          position: 'absolute'}} source={require('../assets/img/wolf.jpg')} /> : null }
+          position: 'absolute'}} source={require('./img/wolf.jpg')} /> : null }
       </Animated.View>
     );
   }
